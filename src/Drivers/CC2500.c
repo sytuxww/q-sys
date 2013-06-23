@@ -8,8 +8,6 @@
  * History:        
  *     <author>   <time>    <version >   <desc>
  */	
- 
-/*include head*/
 #include "Drivers.h"
 #include "Spi.h"
 #include "CC2500.h"
@@ -17,9 +15,6 @@
 
 u8 bTempBuf[PACKET_LEN];
 
-/**
-// PA value
-**/
 const u8 paTable_CC2500[8]={0xfe,0xfe,0xfe,0xfe,0xfe,0xfe,0xfe,0xfe};  //PA value
 
 
@@ -39,7 +34,6 @@ void Delay_ms(u32 nCount)
   		for(i=12000; i != 0; i--);
 }
 
-//send one u8
 void CC2500_SendSpiData(u8 value)
 {
 	CC2500_Select();
@@ -47,7 +41,6 @@ void CC2500_SendSpiData(u8 value)
 	CC2500_NoSelect();
 }
 
-//reset cc2500
 void CC2500_Reset(void)
 {
 	CC2500_SendSpiData(CCxxx0_SIDLE);
@@ -65,7 +58,6 @@ void CC2500_Reset(void)
 	CC2500_SendSpiData(CCxxx0_SRES);
 }
 
-//wirte cc2500 register
 void CC2500_WriteReg(u8 addr, u8 value)
 {
 	CC2500_Select();
@@ -74,16 +66,8 @@ void CC2500_WriteReg(u8 addr, u8 value)
 	CC2500_WriteByte(value);
 	CC2500_NoSelect();
 
-#if 1 //test reg value
-	if(CC2500_ReadReg(addr)!=value)
-	{
-		Debug("The Reg0x%x value is error!(write=0x%x,read=0x%x)\n\r",addr,value,CC2500_ReadReg(addr));
-		while(1);
-	}
-#endif
 }
 
-// read cc2500 register
 u8 CC2500_ReadReg(u8 addr)
 {
 	u8 value;
@@ -91,14 +75,12 @@ u8 CC2500_ReadReg(u8 addr)
 	CC2500_Select();
 	CC2500_WriteByte(addr|0x80);
 	value = CC2500_ReadByte();
-    CC2500_NoSelect();
+	CC2500_NoSelect();
 	return value;
 }
 
-// wirte setting register to cc2500
 void CC2500_RfSettings(void)
 {
-	//u8 i;
 	
 #if 1
 		CC2500_WriteReg(CCxxx0_FSCTRL1,	0x09);	// 0x0c
@@ -106,13 +88,12 @@ void CC2500_RfSettings(void)
 		CC2500_WriteReg(CCxxx0_FREQ2,	0x5D);
 		CC2500_WriteReg(CCxxx0_FREQ1,	0x93);
 		CC2500_WriteReg(CCxxx0_FREQ0,	0xB1);
-//#define _10k
 #ifdef _10k
 		CC2500_WriteReg(CCxxx0_MDMCFG4,	0x78); //0x78-10k   0x86
 		CC2500_WriteReg(CCxxx0_MDMCFG3,	0x93); //0x93-10k   0x83
 //		CC2500_WriteReg(CCxxx0_MDMCFG2,	0x70);
 		CC2500_WriteReg(CCxxx0_MDMCFG2,	0x03); //0x03-10k  0x03
-		CC2500_WriteReg(CCxxx0_MDMCFG1,	0x22); //0x22-10k	 0x22							// 0x22????
+		CC2500_WriteReg(CCxxx0_MDMCFG1,	0x22); //0x22-10k
 		CC2500_WriteReg(CCxxx0_MDMCFG0,	0xF8); //0xf8        0xf8		
 
 #else
@@ -120,37 +101,37 @@ void CC2500_RfSettings(void)
 		CC2500_WriteReg(CCxxx0_MDMCFG3,	0x3B); //0x93-10k   0x83
 //		CC2500_WriteReg(CCxxx0_MDMCFG2,	0x70);
 		CC2500_WriteReg(CCxxx0_MDMCFG2,	0x73); //0x03-10k  0x03
-		CC2500_WriteReg(CCxxx0_MDMCFG1,	0xA2); //0x22-10k	 0x22							// 0x22????
+		CC2500_WriteReg(CCxxx0_MDMCFG1,	0xA2); //0x22-100  0x22
 		CC2500_WriteReg(CCxxx0_MDMCFG0,	0xF8); //0xf8        0xf8
 #endif
 
 		CC2500_WriteReg(CCxxx0_CHANNR,	0x00);
-		CC2500_WriteReg(CCxxx0_DEVIATN,	0x01);	//0x44							// 00
-		CC2500_WriteReg(CCxxx0_FREND1,	0x56);								// 0xB6   56错误机率减少
+		CC2500_WriteReg(CCxxx0_DEVIATN,	0x01);	//0x44
+		CC2500_WriteReg(CCxxx0_FREND1,	0x56);	//0xB6   56错误机率减少
 		CC2500_WriteReg(CCxxx0_FREND0,	0x10);
-		CC2500_WriteReg(CCxxx0_MCSM1,	0x00);								// 0X00>NO CCA; 0X30>CCA   ?????
+		CC2500_WriteReg(CCxxx0_MCSM1,	0x00);  // 0X00>NO CCA; 0X30>CCA   ?????
 		CC2500_WriteReg(CCxxx0_MCSM0,	0x18);
-		CC2500_WriteReg(CCxxx0_FOCCFG,	0x15);								// 0x1D   频率偏移补偿
-		CC2500_WriteReg(CCxxx0_BSCFG,	0x6C);								// 0x1c   位同步配置
-		CC2500_WriteReg(CCxxx0_AGCCTRL2,	0x07);								// 0xc3    增益控制
-		CC2500_WriteReg(CCxxx0_AGCCTRL1,	0x00);								// cca=0x10
-		CC2500_WriteReg(CCxxx0_AGCCTRL0,	0x91);								// 0xb2
+		CC2500_WriteReg(CCxxx0_FOCCFG,	0x15);	// 0x1D   频率偏移补偿
+		CC2500_WriteReg(CCxxx0_BSCFG,	0x6C);	// 0x1c   位同步配置
+		CC2500_WriteReg(CCxxx0_AGCCTRL2,	0x07);	// 0xc3    增益控制
+		CC2500_WriteReg(CCxxx0_AGCCTRL1,	0x00);	// cca=0x10
+		CC2500_WriteReg(CCxxx0_AGCCTRL0,	0x91);	// 0xb2
 		CC2500_WriteReg(CCxxx0_FSCAL3,	0xEA);
 		CC2500_WriteReg(CCxxx0_FSCAL2,	0x0A);  //0x0a - 250k  0x06 --10k,0x08-2.4k
-		CC2500_WriteReg(CCxxx0_FSCAL1,	0x00);								// 增加频率同步校准
+		CC2500_WriteReg(CCxxx0_FSCAL1,	0x00);	// 增加频率同步校准
 
 		CC2500_WriteReg(CCxxx0_FSCAL0,	0x11);
 		CC2500_WriteReg(CCxxx0_FSTEST,	0x59);
-		CC2500_WriteReg(CCxxx0_TEST2,	0x8F);								// 0x88
-		CC2500_WriteReg(CCxxx0_TEST1,	0x21);								// 0x31
+		CC2500_WriteReg(CCxxx0_TEST2,	0x8F);  // 0x88
+		CC2500_WriteReg(CCxxx0_TEST1,	0x21);	// 0x31
 		CC2500_WriteReg(CCxxx0_TEST0,	0x0B);
-		CC2500_WriteReg(CCxxx0_IOCFG2,	0x06);	//29							// CCA=0x09:1=free   ??????
-		CC2500_WriteReg(CCxxx0_IOCFG0,	0x06);								//                  ?????
+		CC2500_WriteReg(CCxxx0_IOCFG2,	0x06);	//29// CCA=0x09:1=free   ??????
+		CC2500_WriteReg(CCxxx0_IOCFG0,	0x06);	//                  ?????
 		CC2500_WriteReg(CCxxx0_PKTCTRL1,	0x00);	//无地址检查		//                      ??????
-		CC2500_WriteReg(CCxxx0_PKTCTRL0,	0x04);	//0x41 whiter+val	 //crc on 05						//                          ????
-		CC2500_WriteReg(CCxxx0_ADDR,		0x00);								//                     ?????
+		CC2500_WriteReg(CCxxx0_PKTCTRL0,	0x04);	//0x41 whiter+val
+		CC2500_WriteReg(CCxxx0_ADDR,		0x00);
 		CC2500_WriteReg(CCxxx0_PKTLEN,	PACKET_LEN);//                      ??????
-      // CC2500_ReadReg(CCxxx0_MDMCFG1);
+      		// CC2500_ReadReg(CCxxx0_MDMCFG1);
 #else
 	CC2500_WriteReg(CCxxx0_IOCFG2,0x0B);//0x0B,   // IOCFG2    GDO2 output pin configuration.
 	CC2500_WriteReg(CCxxx0_IOCFG1,0x06);   //IOCFG1
@@ -209,7 +190,6 @@ void CC2500_RfSettings(void)
 		//Debug("0x%x:0x%x\n\r",i,CC2500_ReadReg(i));
 }
 
-// read chip id 
 u16 CC2500_GetChipId(void)
 {
 	u16 id = 0;
@@ -224,7 +204,6 @@ u16 CC2500_GetChipId(void)
     return id;
 }
 
-// set cc2500 to RX mode
 void CC2500_SetRxd(void)
 {
 	CC2500_SendSpiData(CCxxx0_SIDLE);
@@ -240,8 +219,6 @@ void CC2500_SetRecvAddr(CC2500_RECV_ADDR AddrMode,u8 SpecAddr)
 	CC2500_SetRxd();
 }
 
-// setup cc2500
-// id不对返回false
 bool CC2500_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -260,10 +237,10 @@ bool CC2500_Init(void)
 	
 	CC2500_Reset();
 	if((Id=CC2500_GetChipId())!=0x8003)
-    {
+	{
 		Debug("Error CC2500 ID: %04x\n\r",Id);
 		return FALSE;
-    }
+	}
 	
 	CC2500_RfSettings();
 
@@ -286,12 +263,12 @@ bool CC2500_Init(void)
 #if QXW_LCM_ID == 210 || QXW_LCM_ID == 211 || QXW_LCM_ID == 220 || QXW_LCM_ID == 221
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI3_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = EXTI3_IRQn_Priority;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE
 	NVIC_Init(&NVIC_InitStructure);
 	
 	EXTI_InitStructure.EXTI_Line = EXTI_Line3;             //外部中断线 ，使用第2根
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;    //中断模式
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;    //中断模
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;//中断触发方式
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;              //打开中断
 	EXTI_Init(&EXTI_InitStructure);    //调用库函数给寄存器复制
@@ -302,12 +279,12 @@ bool CC2500_Init(void)
 #elif QXW_LCM_ID == 212
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = EXTI9_5_IRQn_Priority;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE
 	NVIC_Init(&NVIC_InitStructure);
 	
 	EXTI_InitStructure.EXTI_Line = EXTI_Line6;             //外部中断线 ，使用第2根
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;    //中断模式
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;    //中断模
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;//中断触发方式
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;              //打开中断
 	EXTI_Init(&EXTI_InitStructure);    //调用库函数给寄存器复制
