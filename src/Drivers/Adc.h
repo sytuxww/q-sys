@@ -4,7 +4,4 @@
 void Adc_Init(void);
 u16 ReadBatteryVoltage(void);
 
-
-
 #endif
-
